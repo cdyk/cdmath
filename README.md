@@ -1,0 +1,2 @@
+# cdmath
+Unfancy math library
