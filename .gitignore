@@ -35,4 +35,6 @@
 *.xcworkspace
 .DS_Store
 test/obj
+test/Debug
+test/Release
 
