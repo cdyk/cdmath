@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+*.xcodeproj
+*.xcworkspace
+.DS_Store
+test/obj
+
