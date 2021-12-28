@@ -101,66 +101,116 @@ typedef BBox3<float> BBox3f;
 typedef BBox3<double> BBox3d;
 template<typename T> BBox3<T> makeBBox(const Vec3<T>& min, const Vec3<T>& max) { BBox3<T> box; box.min = min; box.max = max; return box; }
 
-struct Mat3f
+template<typename T>
+struct Mat3
 {
-  Mat3f() = default;
-  Mat3f(const Mat3f&) = default;
-  Mat3f(const float* ptr) { for (unsigned i = 0; i < 3 * 3; i++) data[i] = ptr[i]; }
-  Mat3f(float m00, float m01, float m02,
-        float m10, float m11, float m12,
-        float m20, float m21, float m22) :
-    m00(m00), m10(m10), m20(m20),
-    m01(m01), m11(m11), m21(m21),
-    m02(m02), m12(m12), m22(m22)
-  {}
-
-
   union {
     struct {
-      float m00;
-      float m10;
-      float m20;
-      float m01;
-      float m11;
-      float m21;
-      float m02;
-      float m12;
-      float m22;
+      float c0r0;
+      float c0r1;
+      float c0r2;
+      float c1r0;
+      float c1r1;
+      float c1r2;
+      float c2r0;
+      float c2r1;
+      float c2r2;
     };
-    Vec3f cols[3];
+    Vec3<T> cols[3];
     float data[3 * 3];
   };
 };
+typedef Mat3<float> Mat3f;
+typedef Mat3<double> Mat3d;
 
-
-struct Mat3x4f
+template<typename T>
+Mat3<T> makeMat3(const Vec3<T>& c0, const Vec3<T>& c1, const Vec3<T>& c2)
 {
-  Mat3x4f() = default;
-  Mat3x4f(const Mat3x4f&) = default;
-  Mat3x4f(const float* ptr) { for (unsigned i = 0; i < 4 * 3; i++) data[i] = ptr[i]; }
+  Mat3<T> m;
+  m.cols[0] = c0;
+  m.cols[1] = c1;
+  m.cols[2] = c2;
+  return m;
+}
 
+template<typename T>
+Mat3<T> makeMat3(const T* p)
+{
+  Mat3<T> m;
+  for(size_t i=0; i<3*3; i++) { m.data[i] = p[i]; }
+  return m;
+}
+
+template<typename T>
+Mat3<T> makeMatRowMajor3(T c0r0, T c1r0, T c2r0,
+                         T c0r1, T c1r1, T c2r1,
+                         T c0r2, T c1r2, T c2r2)
+{
+  Mat3<T> m;
+  m.c0r0 = c0r0; m.c0r1 = c0r1; m.c0r2 = c0r2;
+  m.c1r0 = c1r0; m.c1r1 = c1r1; m.c1r2 = c1r2;
+  m.c2r0 = c2r0; m.c2r1 = c2r1; m.c2r2 = c2r2;
+  return m;
+}
+
+
+template<typename T>
+struct Mat3x4
+{
   union {
     struct {
-      float m00;
-      float m10;
-      float m20;
-
-      float m01;
-      float m11;
-      float m21;
-
-      float m02;
-      float m12;
-      float m22;
-
-      float m03;
-      float m13;
-      float m23;
+      float c0r0;
+      float c0r1;
+      float c0r2;
+      float c1r0;
+      float c1r1;
+      float c1r2;
+      float c2r0;
+      float c2r1;
+      float c2r2;
+      float c3r0;
+      float c3r1;
+      float c3r2;
     };
     Vec3f cols[4];
     float data[4 * 3];
   };
 };
+typedef Mat3x4<float> Mat3x4f;
+typedef Mat3x4<double> Mat3x4d;
+
+template<typename T>
+Mat3x4<T> makeMat3x4(const Vec3<T>& c0, const Vec3<T>& c1, const Vec3<T>& c2, const Vec3<T>& c3)
+{
+  Mat3<T> m;
+  m.cols[0] = c0;
+  m.cols[1] = c1;
+  m.cols[2] = c2;
+  m.cols[3] = c3;
+  return m;
+}
+
+template<typename T>
+Mat3x4<T> makeMat3x4(const T* p)
+{
+  Mat3<T> m;
+  for(size_t i=0; i<4*3; i++) { m.data[i] = p[i]; }
+  return m;
+}
+
+template<typename T>
+Mat3x4<T> makeMatRowMajor3x4(T c0r0, T c1r0, T c2r0, T c3r0,
+                             T c0r1, T c1r1, T c2r1, T c3r1,
+                             T c0r2, T c1r2, T c2r2, T c3r2)
+{
+  Mat3<T> m;
+  m.c0r0 = c0r0; m.c0r1 = c0r1; m.c0r2 = c0r2;
+  m.c1r0 = c1r0; m.c1r1 = c1r1; m.c1r2 = c1r2;
+  m.c2r0 = c2r0; m.c2r1 = c2r1; m.c2r2 = c2r2;
+  m.c3r0 = c3r0; m.c3r1 = c3r1; m.c3r2 = c3r2;
+  return m;
+}
+
 
 
 inline Vec2f makeVec2f(float x)                { return makeVec2(x, x); }
@@ -231,3 +281,23 @@ inline BBox2d makeEmptyBBox2d() { BBox2d box; box.min = makeVec2d(DBL_MAX); box.
 inline BBox3f makeEmptyBBox3f() { BBox3f box; box.min = makeVec3f(FLT_MAX); box.max = makeVec3f(-FLT_MAX); return box; }
 inline BBox3d makeEmptyBBox3d() { BBox3d box; box.min = makeVec3d(DBL_MAX); box.max = makeVec3d(-DBL_MAX); return box; }
 
+inline Mat3f makeMat3f(const Vec3f& c0, const Vec3f& c1, const Vec3f& c2) { return makeMat3(c0, c1, c2); }
+inline Mat3d makeMat3d(const Vec3d& c0, const Vec3d& c1, const Vec3d& c2) { return makeMat3(c0, c1, c2); }
+inline Mat3f makeMat3f(const float* p) { return makeMat3(p); }
+inline Mat3d makeMat3d(const double* p) { return makeMat3(p); }
+inline Mat3f makeMatRowMajor3f(float c0r0, float c1r0, float c2r0,
+                               float c0r1, float c1r1, float c2r1,
+                               float c0r2, float c1r2, float c2r2)
+{
+  return makeMatRowMajor3(c0r0, c1r0, c2r0,
+                          c0r1, c1r1, c2r1,
+                          c0r2, c1r2, c2r2);
+}
+inline Mat3d makeMatRowMajor3d(double c0r0, double c1r0, double c2r0,
+                               double c0r1, double c1r1, double c2r1,
+                               double c0r2, double c1r2, double c2r2)
+{
+  return makeMatRowMajor3(c0r0, c1r0, c2r0,
+                          c0r1, c1r1, c2r1,
+                          c0r2, c1r2, c2r2);
+}
