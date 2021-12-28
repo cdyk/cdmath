@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <cfloat>
 
 /** 2D vector */
 template<typename T>
@@ -67,22 +68,38 @@ typedef Vec4<unsigned> Vec4u;
 template<typename T> Vec4<T> makeVec4(T x, T y, T z, T w) { Vec4<T> u; u.x = x;    u.y = y;    u.z = z;    u.w = w;    return u; }
 template<typename T> Vec4<T> makeVec4(const T* p) {         Vec4<T> u; u.x = p[0]; u.y = p[1]; u.z = p[2]; u.w = p[3]; return u; }
 
-
-struct BBox3f
+/** 2D bounding box */
+template<typename T>
+struct BBox2
 {
-  BBox3f() = default;
-  BBox3f(const BBox3f&) = default;
-  BBox3f(const Vec3f& min, const Vec3f& max) : min(min), max(max) {}
-  BBox3f(const BBox3f& bbox, float margin);
+  union {
+    struct {
+      Vec2<T> min;
+      Vec2<T> max;
+    };
+    T data[4];
+  };
+};
+typedef BBox2<float> BBox2f;
+typedef BBox2<double> BBox2d;
+template<typename T> BBox2<T> makeBBox(const Vec2<T>& min, const Vec2<T>& max) { BBox2<T> box; box.min = min; box.max = max; return box; }
+
+/** 3D bounding box */
+template<typename T>
+struct BBox3
+{
 
   union {
     struct {
-      Vec3f min;
-      Vec3f max;
+      Vec3<T> min;
+      Vec3<T> max;
     };
-    float data[6];
+    T data[6];
   };
 };
+typedef BBox3<float> BBox3f;
+typedef BBox3<double> BBox3d;
+template<typename T> BBox3<T> makeBBox(const Vec3<T>& min, const Vec3<T>& max) { BBox3<T> box; box.min = min; box.max = max; return box; }
 
 struct Mat3f
 {
@@ -208,3 +225,9 @@ inline Vec4u makeVec4u(unsigned x)                                     { return 
 inline Vec4u makeVec4u(unsigned x, unsigned y, unsigned z, unsigned w) { return makeVec4(x, y, z, w); }
 inline Vec4u makeVec4u(const unsigned* p)                              { return makeVec4(p); }
 inline Vec4u makeVec4u(const Vec4u& v)                                 { return makeVec4(v.data); }
+
+inline BBox2f makeEmptyBBox2f() { BBox2f box; box.min = makeVec2f(FLT_MAX); box.max = makeVec2f(-FLT_MAX); return box; }
+inline BBox2d makeEmptyBBox2d() { BBox2d box; box.min = makeVec2d(DBL_MAX); box.max = makeVec2d(-DBL_MAX); return box; }
+inline BBox3f makeEmptyBBox3f() { BBox3f box; box.min = makeVec3f(FLT_MAX); box.max = makeVec3f(-FLT_MAX); return box; }
+inline BBox3d makeEmptyBBox3d() { BBox3d box; box.min = makeVec3d(DBL_MAX); box.max = makeVec3d(-DBL_MAX); return box; }
+

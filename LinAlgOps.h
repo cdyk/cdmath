@@ -205,65 +205,99 @@ inline Vec3f mul(const Mat3x4f& A, const Vec3f& x)
   return r;
 }
 
-inline BBox3f createEmptyBBox3f()
+template<typename T> BBox2<T> grow(const BBox2<T>& bbox, T margin)
 {
-  return BBox3f(makeVec3f(FLT_MAX, FLT_MAX, FLT_MAX),
-                makeVec3f(-FLT_MAX, -FLT_MAX, -FLT_MAX));
+  return makeBBox(bbox.min - makeVec3f(margin),
+                  bbox.max + makeVec3f(margin));
+}
+template<typename T> BBox3<T> grow(const BBox3<T>& bbox, T margin)
+{
+  return makeBBox(bbox.min - makeVec3f(margin),
+                  bbox.max + makeVec3f(margin));
 }
 
-inline BBox3f::BBox3f(const BBox3f& bbox, float margin) :
-  min(bbox.min - makeVec3f(margin)),
-  max(bbox.max + makeVec3f(margin))
-{}
-
-inline void engulf(BBox3f& target, const Vec3f& p)
+template<typename T> BBox2<T> engulf(const BBox2<T>& bbox, const Vec2<T>& p)
 {
-  target.min = min(target.min, p);
-  target.max = max(target.max, p);
+  return makeBBox(min(bbox.min, p),
+                  max(bbox.max, p));
+}
+template<typename T> BBox3<T> engulf(const BBox3<T>& bbox, const Vec3<T>& p)
+{
+  return makeBBox(min(bbox.min, p),
+                  max(bbox.max, p));
 }
 
-inline void engulf(BBox3f& target, const BBox3f& other)
+template<typename T> BBox2<T> engulf(const BBox2<T>& bbox, const BBox2<T>& other)
 {
-  target.min = min(target.min, other.min);
-  target.max = max(target.max, other.max);
+  return makeBBox(min(bbox.min, other.min),
+                  max(bbox.max, other.max));
+}
+template<typename T> BBox3<T> engulf(const BBox3<T>& bbox, const BBox3<T>& other)
+{
+  return makeBBox(min(bbox.min, other.min),
+                  max(bbox.max, other.max));
 }
 
-BBox3f transform(const Mat3x4f& M, const BBox3f& bbox);
+template<typename T> T diagonal(const BBox2<T>& b) { return distance(b.min, b.max); }
+template<typename T> T diagonal(const BBox3<T>& b) { return distance(b.min, b.max); }
 
-inline float diagonal(const BBox3f& b) { return distance(b.min, b.max); }
+template<typename T> bool isEmpty(const BBox2<T>& b) { return b.max.x < b.min.x; }
+template<typename T> bool isEmpty(const BBox3<T>& b) { return b.max.x < b.min.x; }
 
-inline bool isEmpty(const BBox3f& b) { return b.max.x < b.min.x; }
+template<typename T> bool isNotEmpty(const BBox2<T>& b) { return b.min.x <= b.max.x; }
+template<typename T> bool isNotEmpty(const BBox3<T>& b) { return b.min.x <= b.max.x; }
 
-inline bool isNotEmpty(const BBox3f& b) { return b.min.x <= b.max.x; }
-
-inline float maxSideLength(const BBox3f& b)
+template<typename T> T maxSideLength(const BBox2<T>& b)
 {
-  auto l = b.max - b.min;
-  auto t = l.x > l.y ? l.x : l.y;
+  Vec2<T> l = b.max - b.min;
+  return l.x > l.y ? l.x : l.y;
+}
+template<typename T> T maxSideLength(const BBox3<T>& b)
+{
+  Vec3<T> l = b.max - b.min;
+  T t = l.x > l.y ? l.x : l.y;
   return l.z > t ? l.z : t;
 }
 
-inline bool isStrictlyInside(const BBox3f& a, const BBox3f& b)
+template<typename T> bool isStrictlyInside(const BBox2<T>& a, const BBox2<T>& b)
 {
-  auto lx = a.min.x <= b.min.x;
-  auto ly = a.min.y <= b.min.y;
-  auto lz = a.min.z <= b.min.z;
-  auto ux = b.max.x <= a.max.x;
-  auto uy = b.max.y <= a.max.y;
-  auto uz = b.max.z <= a.max.z;
+  bool lx = a.min.x <= b.min.x;
+  bool ly = a.min.y <= b.min.y;
+  bool ux = b.max.x <= a.max.x;
+  bool uy = b.max.y <= a.max.y;
+  return lx && ly && ux && uy;
+}
+template<typename T> bool isStrictlyInside(const BBox3<T>& a, const BBox3<T>& b)
+{
+  bool lx = a.min.x <= b.min.x;
+  bool ly = a.min.y <= b.min.y;
+  bool lz = a.min.z <= b.min.z;
+  bool ux = b.max.x <= a.max.x;
+  bool uy = b.max.y <= a.max.y;
+  bool uz = b.max.z <= a.max.z;
   return lx && ly && lz && ux && uy && uz;
 }
 
-inline bool isNotOverlapping(const BBox3f& a, const BBox3f& b)
+template<typename T> bool isNotOverlapping(const BBox2<T>& a, const BBox2<T>& b)
 {
-  auto lx = b.max.x < a.min.x;
-  auto ly = b.max.y < a.min.y;
-  auto lz = b.max.z < a.min.z;
-  auto ux = a.max.x < b.min.x;
-  auto uy = a.max.y < b.min.y;
-  auto uz = a.max.z < b.min.z;
+  bool lx = b.max.x < a.min.x;
+  bool ly = b.max.y < a.min.y;
+  bool ux = a.max.x < b.min.x;
+  bool uy = a.max.y < b.min.y;
+  return lx || ly || ux || uy;
+}
+template<typename T> bool isNotOverlapping(const BBox3<T>& a, const BBox3<T>& b)
+{
+  bool lx = b.max.x < a.min.x;
+  bool ly = b.max.y < a.min.y;
+  bool lz = b.max.z < a.min.z;
+  bool ux = a.max.x < b.min.x;
+  bool uy = a.max.y < b.min.y;
+  bool uz = a.max.z < b.min.z;
   return lx || ly || lz || ux || uy || uz;
 }
 
-inline bool isOverlapping(const BBox3f& a, const BBox3f& b) { return !isNotOverlapping(a, b); }
+template<typename T> bool isOverlapping(const BBox2<T>& a, const BBox2<T>& b) { return !isNotOverlapping(a, b); }
+template<typename T> bool isOverlapping(const BBox3<T>& a, const BBox3<T>& b) { return !isNotOverlapping(a, b); }
 
+BBox3f transform(const Mat3x4f& M, const BBox3f& bbox);
